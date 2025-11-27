@@ -31,3 +31,37 @@ def test_invalid_input(client):
     response = client.get("/add/five/ten")
     # Flask returns 404 if the route type <int:> doesn't match, unlike FastAPI's 422
     assert response.status_code == 404
+
+def test_login_valid(client):
+    """
+    Test login with valid credentials.
+    """
+    response = client.post('/login', json={'username': 'user1', 'password': 'pass1'})
+    assert response.status_code == 200
+    assert response.get_json() == {"message": "Login successful"}
+
+def test_login_invalid(client):
+    """
+    Test login with invalid credentials.
+    """
+    response = client.post('/login', json={'username': 'user1', 'password': 'wrong'})
+    assert response.status_code == 401
+    assert response.get_json() == {"message": "Invalid credentials"}
+
+def test_subtract_with_login(client):
+    """
+    Test subtract function after login.
+    """
+    # First login
+    client.post('/login', json={'username': 'user1', 'password': 'pass1'})
+    response = client.get('/subtract/10/5')
+    assert response.status_code == 200
+    assert response.get_json() == {"result": 5}
+
+def test_subtract_without_login(client):
+    """
+    Test subtract function without login.
+    """
+    response = client.get('/subtract/10/5')
+    assert response.status_code == 401
+    assert response.get_json() == {"message": "Login required"}
